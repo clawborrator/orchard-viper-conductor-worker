@@ -1,0 +1,30 @@
+# orchard-viper-conductor-worker — docker-compose for the
+# @MRIIOT/orchard-viper-conductor meta-agent.
+#
+# Pulls the agent code (CLAUDE.md only) from the sibling repo via
+# REPO_URL in .env:
+#   https://github.com/clawborrator/orchard-viper-conductor-repo
+#
+# Runs as a SINGLE long-lived worker. No cron, no fan-out, no
+# Playwright. Lighter than orchard-viper-forum because the conductor
+# has no local subprocesses — every action is an MCP tool call.
+#
+#   1. Fill in .env (copy from .env.example): ANTHROPIC_API_KEY +
+#      CLAWBORRATOR_TOKEN at minimum; REPO_PAT for the self-improvement
+#      push loop.
+#   2. docker compose up -d
+#   3. docker compose logs -f          # watch the agent
+#   4. docker compose down             # stop + remove
+#
+# Image is ladder99/clawborrator-worker:latest — the base worker_v1
+# image, NOT the Playwright variant. The conductor doesn't need a
+# browser.
+
+services:
+  conductor:
+    image:          ladder99/clawborrator-worker:latest
+    container_name: orchard-viper-conductor
+    env_file:       .env
+    stdin_open: true
+    tty:        true
+    restart:    unless-stopped
